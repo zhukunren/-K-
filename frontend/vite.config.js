@@ -1,0 +1,26 @@
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import path from 'path'
+
+export default defineConfig({
+  plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src')
+    }
+  },
+  server: {
+    port: 5173,
+    host: '0.0.0.0',
+    allowedHosts: ['kline.dwzq.top', 'localhost'],
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8001/api',
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  }
+})

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(wc:*)",
+      "Bash(chmod:*)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"启动.ps1\")",
+      "Bash(Remove-Item \"E:\\\\项目\\\\相似k线\\\\启动项目.ps1\" -Force)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
