@@ -76,6 +76,7 @@ class PredictionRequest(BaseModel):
     use_cache: bool = True  # 是否启用模型缓存
     freeze_eval_history: bool = True  # 是否冻结逐日评估历史，避免新行情改变旧结果
     force_eval_refresh: bool = False  # 强制重算逐日评估（忽略缓存）
+    include_chart: bool = False  # 在 /api/predict 响应中直接返回 Plotly HTML，避免再调用 /api/generate_chart
 
 
 FEATURE_NAME_MAP = {
@@ -145,6 +146,257 @@ FEATURE_GROUP_LABELS = {
 }
 
 
+def _trim_hist_for_chart(hist: list) -> list:
+    """Reduce chart payload size for UI rendering."""
+    if not hist:
+        return []
+    trimmed = hist
+    try:
+        if len(trimmed) > 120:
+            trimmed = trimmed[-120:]
+    except Exception:
+        trimmed = hist
+    try:
+        trimmed = [item for item in trimmed if item.get("date", "") >= "2025-01-01"]
+    except Exception:
+        pass
+    return trimmed
+
+
+def _build_chart_html(symbol: str, hist: list, preds: list, result: dict) -> str:
+    # Build chart: historical and forecast K-lines + MA5/MA20 + volume + returns
+    fig = make_subplots(
+        rows=2,
+        cols=1,
+        shared_xaxes=True,
+        vertical_spacing=0.06,
+        row_heights=[0.7, 0.3],
+        specs=[[{}], [{"secondary_y": True}]],
+    )
+
+    hist_dates = [item["date"] for item in hist]
+    hist_open = [item.get("open", item.get("close", 0.0)) for item in hist]
+    hist_high = [item.get("high", item.get("close", 0.0)) for item in hist]
+    hist_low = [item.get("low", item.get("close", 0.0)) for item in hist]
+    hist_close = [item.get("close", item.get("open", 0.0)) for item in hist]
+    hist_vol = [item.get("volume", 0.0) for item in hist]
+
+    future_dates = [item["date"] for item in preds]
+    fut_open = [item.get("open", 0.0) for item in preds]
+    fut_high = [item.get("high", 0.0) for item in preds]
+    fut_low = [item.get("low", 0.0) for item in preds]
+    fut_close = [item.get("close", 0.0) for item in preds]
+
+    def _build_candle_custom(open_values, close_values, prev_close=None):
+        custom_rows = []
+        prev = prev_close
+        for o_val, c_val in zip(open_values, close_values):
+            change = float("nan")
+            if o_val not in (None, 0):
+                change = ((c_val - o_val) / o_val) * 100.0
+            gap = float("nan")
+            if prev not in (None, 0):
+                gap = ((o_val - prev) / prev) * 100.0
+            custom_rows.append([change, gap])
+            prev = c_val
+        return custom_rows
+
+    def _build_tooltips(dates, opens, highs, lows, closes, extras):
+        tooltips = []
+        for d, o_val, h_val, l_val, c_val, extra in zip(dates, opens, highs, lows, closes, extras):
+            change, gap = extra
+            lines = [
+                f"<b>{d}</b>",
+                f"Open: {o_val:.2f}",
+                f"High: {h_val:.2f}",
+                f"Low: {l_val:.2f}",
+                f"Close: {c_val:.2f}",
+            ]
+            if not np.isnan(change):
+                lines.append(f"Change: {change:+.2f}%")
+            if not np.isnan(gap):
+                lines.append(f"Gap: {gap:+.2f}%")
+            tooltips.append("<br>".join(lines))
+        return tooltips
+
+    hist_custom = _build_candle_custom(hist_open, hist_close)
+    hist_hover = _build_tooltips(hist_dates, hist_open, hist_high, hist_low, hist_close, hist_custom)
+    prev_close = hist_close[-1] if hist_close else None
+    fut_custom = _build_candle_custom(fut_open, fut_close, prev_close)
+    fut_hover = _build_tooltips(future_dates, fut_open, fut_high, fut_low, fut_close, fut_custom)
+
+    # Historical and forecast candlesticks
+    if hist:
+        fig.add_trace(
+            go.Candlestick(
+                x=hist_dates,
+                open=hist_open,
+                high=hist_high,
+                low=hist_low,
+                close=hist_close,
+                name="Price",
+                increasing_line_color="#ef5350",
+                decreasing_line_color="#26a69a",
+                increasing_fillcolor="rgba(239,83,80,0.6)",
+                decreasing_fillcolor="rgba(38,166,154,0.6)",
+                customdata=hist_custom,
+                hovertext=hist_hover,
+                hoverinfo="text",
+            ),
+            row=1,
+            col=1,
+        )
+    if preds:
+        fig.add_trace(
+            go.Candlestick(
+                x=future_dates,
+                open=fut_open,
+                high=fut_high,
+                low=fut_low,
+                close=fut_close,
+                name="Forecast",
+                increasing_line_color="#0D47A1",
+                decreasing_line_color="#0D47A1",
+                increasing_fillcolor="rgba(13,71,161,1)",
+                decreasing_fillcolor="rgba(13,71,161,1)",
+                line=dict(width=2),
+                customdata=fut_custom,
+                hovertext=fut_hover,
+                hoverinfo="text",
+            ),
+            row=1,
+            col=1,
+        )
+
+    # Forecast mean and IQR
+    if preds:
+        fig.add_trace(
+            go.Scatter(
+                x=future_dates,
+                y=result.get("mean_path", []),
+                mode="lines",
+                name="Forecast mean (close)",
+                line=dict(color="#42A5F5", width=2, dash="dot"),
+            ),
+            row=1,
+            col=1,
+        )
+
+        q75 = result.get("q75_path", [])
+        q25 = result.get("q25_path", [])
+        if q75 and q25:
+            fig.add_trace(
+                go.Scatter(
+                    x=future_dates,
+                    y=q75,
+                    mode="lines",
+                    line=dict(width=0),
+                    showlegend=False,
+                    hoverinfo="skip",
+                ),
+                row=1,
+                col=1,
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=future_dates,
+                    y=q25,
+                    mode="lines",
+                    line=dict(width=0),
+                    fill="tonexty",
+                    fillcolor="rgba(66,165,245,0.15)",
+                    name="Forecast close IQR",
+                ),
+                row=1,
+                col=1,
+            )
+
+        if result.get("close_paths"):
+            for path in result["close_paths"]:
+                if len(path) == len(future_dates):
+                    fig.add_trace(
+                        go.Scatter(
+                            x=future_dates,
+                            y=path,
+                            mode="lines",
+                            line=dict(color="rgba(33,150,243,0.25)", width=1),
+                            showlegend=False,
+                            hoverinfo="skip",
+                        ),
+                        row=1,
+                        col=1,
+                    )
+
+    # Append MA5/MA20 over all close values
+    all_dates = hist_dates + future_dates
+    all_close = hist_close + fut_close
+    if all_dates:
+
+        def sma(arr, n):
+            out = []
+            s = 0.0
+            for i, v in enumerate(arr):
+                s += v
+                if i >= n:
+                    s -= arr[i - n]
+                out.append(s / float(min(i + 1, n)))
+            return out
+
+        ma5 = sma(all_close, 5)
+        ma20 = sma(all_close, 20)
+        fig.add_trace(
+            go.Scatter(x=all_dates, y=ma5, mode="lines", name="MA5", line=dict(color="#FF9800", width=1.5)),
+            row=1,
+            col=1,
+        )
+        fig.add_trace(
+            go.Scatter(x=all_dates, y=ma20, mode="lines", name="MA20", line=dict(color="#9C27B0", width=1.2)),
+            row=1,
+            col=1,
+        )
+
+    # Volume bars (row 2 left axis)
+    if hist:
+        fig.add_trace(
+            go.Bar(x=hist_dates, y=hist_vol, name="Volume", marker_color="rgba(100,181,246,0.6)"),
+            row=2,
+            col=1,
+            secondary_y=False,
+        )
+
+    # Returns line (row 2 right axis, in %)
+    if all_close:
+        rets = [None]
+        for i in range(1, len(all_close)):
+            prev = all_close[i - 1]
+            cur = all_close[i]
+            rets.append(((cur - prev) / prev) * 100 if prev else None)
+        fig.add_trace(
+            go.Scatter(x=all_dates, y=rets, mode="lines", name="Return (%)", line=dict(color="#607D8B", width=1)),
+            row=2,
+            col=1,
+            secondary_y=True,
+        )
+
+    fig.update_layout(
+        title=f"{symbol} forecast",
+        xaxis_title="Date",
+        yaxis_title="Price",
+        xaxis_rangeslider_visible=False,
+        template="plotly_white",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+        height=680,
+        hovermode="x unified",
+    )
+    if all_dates:
+        fig.update_xaxes(type="date", categoryorder="array", categoryarray=all_dates, row=1, col=1)
+        fig.update_xaxes(type="date", categoryorder="array", categoryarray=all_dates, row=2, col=1)
+    fig.update_yaxes(title_text="Volume", row=2, col=1, secondary_y=False)
+    fig.update_yaxes(title_text="Return (%)", row=2, col=1, secondary_y=True)
+
+    return fig.to_html(include_plotlyjs="cdn", config={"responsive": True})
+
+
 @app.get("/")
 def read_root():
     return {"message": "Stock Prediction API (Full Version) is running", "version": "3.0.0"}
@@ -211,6 +463,13 @@ async def predict(request: PredictionRequest):
     from pipeline_core import run_transformer_pipeline
     try:
         result = run_transformer_pipeline(request)
+        if getattr(request, "include_chart", False):
+            try:
+                hist = _trim_hist_for_chart(result.get("historical_data", []))
+                preds = result.get("predictions", [])
+                result["chart_html"] = _build_chart_html(request.symbol, hist, preds, result)
+            except Exception:
+                traceback.print_exc()
         response = {
             "status": "success",
             "message": f"Found {len(result['similar_windows'])} similar windows",
@@ -230,6 +489,8 @@ async def predict(request: PredictionRequest):
             "most_similar_day": result.get("most_similar_day"),  # 添加到顶层
             "model_info": result["model_info"],
         }
+        if result.get("chart_html"):
+            response["html"] = result["chart_html"]
         evaluation = result.get("evaluation")
         if evaluation is not None:
             response["evaluation"] = evaluation
@@ -248,195 +509,9 @@ async def generate_chart(request: PredictionRequest):
         # Pydantic v2: BaseModel.copy 已废弃，使用 model_copy 以消除告警
         chart_request = request.model_copy(update={"evaluate_daily": False})
         result = run_transformer_pipeline(chart_request)
-        hist = result.get("historical_data", [])
-        # Limit to the most recent 120 trading days for display
-        try:
-            if len(hist) > 120:
-                hist = hist[-120:]
-        except Exception:
-            pass
-        # Limit historical window to show from 2025-01-01 onward
-        try:
-            hist = [item for item in hist if item.get("date", "") >= "2025-01-01"]
-        except Exception:
-            pass
+        hist = _trim_hist_for_chart(result.get("historical_data", []))
         preds = result.get("predictions", [])
-
-        # Build chart: historical and forecast K-lines + MA5/MA20 + volume + returns
-        fig = make_subplots(
-            rows=2,
-            cols=1,
-            shared_xaxes=True,
-            vertical_spacing=0.06,
-            row_heights=[0.7, 0.3],
-            specs=[[{}], [{"secondary_y": True}]],
-        )
-
-        hist_dates = [item["date"] for item in hist]
-        hist_open = [item.get("open", item.get("close", 0.0)) for item in hist]
-        hist_high = [item.get("high", item.get("close", 0.0)) for item in hist]
-        hist_low = [item.get("low", item.get("close", 0.0)) for item in hist]
-        hist_close = [item.get("close", item.get("open", 0.0)) for item in hist]
-        hist_vol = [item.get("volume", 0.0) for item in hist]
-
-        future_dates = [item["date"] for item in preds]
-        fut_open = [item.get("open", 0.0) for item in preds]
-        fut_high = [item.get("high", 0.0) for item in preds]
-        fut_low = [item.get("low", 0.0) for item in preds]
-        fut_close = [item.get("close", 0.0) for item in preds]
-
-        def _build_candle_custom(open_values, close_values, prev_close=None):
-            custom_rows = []
-            prev = prev_close
-            for o_val, c_val in zip(open_values, close_values):
-                change = float("nan")
-                if o_val not in (None, 0):
-                    change = ((c_val - o_val) / o_val) * 100.0
-                gap = float("nan")
-                if prev not in (None, 0):
-                    gap = ((o_val - prev) / prev) * 100.0
-                custom_rows.append([change, gap])
-                prev = c_val
-            return custom_rows
-
-        def _build_tooltips(dates, opens, highs, lows, closes, extras):
-            tooltips = []
-            for d, o_val, h_val, l_val, c_val, extra in zip(dates, opens, highs, lows, closes, extras):
-                change, gap = extra
-                lines = [
-                    f"<b>{d}</b>",
-                    f"Open: {o_val:.2f}",
-                    f"High: {h_val:.2f}",
-                    f"Low: {l_val:.2f}",
-                    f"Close: {c_val:.2f}",
-                ]
-                if not np.isnan(change):
-                    lines.append(f"Change: {change:+.2f}%")
-                if not np.isnan(gap):
-                    lines.append(f"Gap: {gap:+.2f}%")
-                tooltips.append("<br>".join(lines))
-            return tooltips
-
-        hist_custom = _build_candle_custom(hist_open, hist_close)
-        hist_hover = _build_tooltips(hist_dates, hist_open, hist_high, hist_low, hist_close, hist_custom)
-        prev_close = hist_close[-1] if hist_close else None
-        fut_custom = _build_candle_custom(fut_open, fut_close, prev_close)
-        fut_hover = _build_tooltips(future_dates, fut_open, fut_high, fut_low, fut_close, fut_custom)
-
-        # Historical and forecast candlesticks
-        if hist:
-            fig.add_trace(go.Candlestick(
-                x=hist_dates, open=hist_open, high=hist_high, low=hist_low, close=hist_close,
-                name="Price",
-                increasing_line_color="#ef5350",
-                decreasing_line_color="#26a69a",
-                increasing_fillcolor="rgba(239,83,80,0.6)",
-                decreasing_fillcolor="rgba(38,166,154,0.6)",
-                customdata=hist_custom,
-                hovertext=hist_hover,
-                hoverinfo="text",
-            ), row=1, col=1)
-        if preds:
-            fig.add_trace(go.Candlestick(
-                x=future_dates, open=fut_open, high=fut_high, low=fut_low, close=fut_close,
-                name="Forecast",
-                increasing_line_color="#0D47A1",
-                decreasing_line_color="#0D47A1",
-                increasing_fillcolor="rgba(13,71,161,1)",
-                decreasing_fillcolor="rgba(13,71,161,1)",
-                line=dict(width=2),
-                customdata=fut_custom,
-                hovertext=fut_hover,
-                hoverinfo="text",
-            ), row=1, col=1)
-
-        # Forecast mean and IQR
-        if preds:
-            fig.add_trace(go.Scatter(
-                x=future_dates,
-                y=result.get("mean_path", []),
-                mode="lines",
-                name="Forecast mean (close)",
-                line=dict(color="#42A5F5", width=2, dash="dot"),
-            ), row=1, col=1)
-
-            q75 = result.get("q75_path", [])
-            q25 = result.get("q25_path", [])
-            if q75 and q25:
-                fig.add_trace(go.Scatter(x=future_dates, y=q75, mode="lines", line=dict(width=0),
-                                         showlegend=False, hoverinfo="skip"), row=1, col=1)
-                fig.add_trace(go.Scatter(x=future_dates, y=q25, mode="lines", line=dict(width=0),
-                                         fill="tonexty", fillcolor="rgba(66,165,245,0.15)",
-                                         name="Forecast close IQR"), row=1, col=1)
-
-            if result.get("close_paths"):
-                for path in result["close_paths"]:
-                    if len(path) == len(future_dates):
-                        fig.add_trace(go.Scatter(
-                            x=future_dates,
-                            y=path,
-                            mode="lines",
-                            line=dict(color="rgba(33,150,243,0.25)", width=1),
-                            showlegend=False,
-                            hoverinfo="skip",
-                        ), row=1, col=1)
-
-        # Append MA5/MA20 over all close values
-        all_dates = hist_dates + future_dates
-        all_close = hist_close + fut_close
-        if all_dates:
-            def sma(arr, n):
-                out = []
-                s = 0.0
-                for i, v in enumerate(arr):
-                    s += v
-                    if i >= n:
-                        s -= arr[i - n]
-                    out.append(s / float(min(i + 1, n)))
-                return out
-
-            ma5 = sma(all_close, 5)
-            ma20 = sma(all_close, 20)
-            fig.add_trace(go.Scatter(x=all_dates, y=ma5, mode="lines", name="MA5",
-                                     line=dict(color="#FF9800", width=1.5)), row=1, col=1)
-            fig.add_trace(go.Scatter(x=all_dates, y=ma20, mode="lines", name="MA20",
-                                     line=dict(color="#9C27B0", width=1.2)), row=1, col=1)
-
-        # Volume bars (row 2 left axis)
-        if hist:
-            fig.add_trace(go.Bar(x=hist_dates, y=hist_vol, name="Volume",
-                                 marker_color="rgba(100,181,246,0.6)"), row=2, col=1, secondary_y=False)
-
-        # Returns line (row 2 right axis, in %)
-        if all_close:
-            rets = [None]
-            for i in range(1, len(all_close)):
-                prev = all_close[i - 1]
-                cur = all_close[i]
-                rets.append(((cur - prev) / prev) * 100 if prev else None)
-            fig.add_trace(go.Scatter(x=all_dates, y=rets, mode="lines", name="Return (%)",
-                                     line=dict(color="#607D8B", width=1)), row=2, col=1, secondary_y=True)
-
-        # Hide distinction between similar windows and standard window: no highlight rectangles and no split line
-
-        fig.update_layout(
-            title=f"{request.symbol} forecast",
-            xaxis_title="Date",
-            yaxis_title="Price",
-            xaxis_rangeslider_visible=False,
-            template="plotly_white",
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
-            height=680,
-            hovermode="x unified",
-        )
-        if all_dates:
-            fig.update_xaxes(type='date', categoryorder='array', categoryarray=all_dates, row=1, col=1)
-            fig.update_xaxes(type='date', categoryorder='array', categoryarray=all_dates, row=2, col=1)
-        fig.update_yaxes(title_text="Volume", row=2, col=1, secondary_y=False)
-        fig.update_yaxes(title_text="Return (%)", row=2, col=1, secondary_y=True)
-
-        # Use fig.to_html() instead of pyo.plot() to get clean HTML
-        html_str = fig.to_html(include_plotlyjs="cdn", config={"responsive": True})
+        html_str = _build_chart_html(request.symbol, hist, preds, result)
 
         return {
             "status": "success",
