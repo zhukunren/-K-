@@ -7,7 +7,10 @@
       "Bash(wc:*)",
       "Bash(chmod:*)",
       "Bash(powershell.exe -ExecutionPolicy Bypass -File \"启动.ps1\")",
-      "Bash(Remove-Item \"E:\\\\项目\\\\相似k线\\\\启动项目.ps1\" -Force)"
+      "Bash(Remove-Item \"E:\\\\项目\\\\相似k线\\\\启动项目.ps1\" -Force)",
+      "Bash(powershell -Command \"Get-Process python -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2\")",
+      "Bash(Start-Process cmd -ArgumentList \"/k\", \"..\\\\venv\\\\Scripts\\\\python.exe\", \"api_full.py\")",
+      "Bash(powershell -Command \"Set-Location ''E:\\\\项目\\\\相似k线\\\\backend''; Start-Process cmd -ArgumentList ''/k'', ''..\\\\venv\\\\Scripts\\\\python.exe'', ''api_full.py''\")"
     ],
     "deny": [],
     "ask": []

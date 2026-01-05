@@ -232,6 +232,13 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { predictAPI, getFeaturesAPI, generateChartAPI } from '@/api/stock'
 
+function formatYmd(date = new Date()) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}${month}${day}`
+}
+
 // 状态
 const loading = ref(false)
 const plotlyHtml = ref('')
@@ -255,7 +262,7 @@ const showAdvancedSettings = ref(false)
 const params = reactive({
   symbol: '000001.SH',
   startDate: '20200101',
-  endDate: '20251231',
+  endDate: formatYmd(),
   window: 30,
   h_future: 1,
   epochs: 20,

@@ -1447,3 +1447,61 @@ def get_all_stocks_fromcsv():
 
     return df
 
+
+def get_next_trade_dates(start_date: str, periods: int, exchange: str = 'SSE') -> list:
+    """
+    获取从指定日期开始的未来N个交易日
+
+    Args:
+        start_date: 起始日期，格式为 YYYYMMDD 或 datetime 对象
+        periods: 需要获取的交易日数量
+        exchange: 交易所代码，默认为 'SSE'（上海证券交易所）
+                  可选值：'SSE'（上海）、'SZSE'（深圳）
+
+    Returns:
+        list: 交易日期列表（pandas.Timestamp对象）
+
+    Example:
+        >>> dates = get_next_trade_dates('20251231', 5)
+        >>> # 返回 2025年12月31日之后的5个交易日（跳过元旦等节假日）
+    """
+    if not _TUSHARE_TOKEN:
+        raise RuntimeError(
+            "Tushare token is not configured. Set TUSHARE_TOKEN or create backend/.tushare_token to enable data downloads."
+        )
+
+    # 转换起始日期为字符串格式 YYYYMMDD
+    if isinstance(start_date, pd.Timestamp):
+        start_date_str = start_date.strftime('%Y%m%d')
+    elif isinstance(start_date, str):
+        start_date_str = start_date
+    else:
+        start_date_str = pd.to_datetime(start_date).strftime('%Y%m%d')
+
+    # 获取未来一段时间的交易日历（获取足够多的日期以确保有足够的交易日）
+    # 预计每周有5个交易日，考虑节假日，获取 periods * 2 天的日历
+    end_date_estimate = pd.to_datetime(start_date_str) + pd.Timedelta(days=periods * 3)
+    end_date_str = end_date_estimate.strftime('%Y%m%d')
+
+    pro = ts.pro_api()
+
+    # 获取交易日历
+    # is_open=1 表示交易日，0表示非交易日
+    cal = pro.trade_cal(
+        exchange=exchange,
+        start_date=start_date_str,
+        end_date=end_date_str,
+        is_open='1'  # 只获取交易日
+    )
+
+    if cal is None or cal.empty:
+        raise ValueError(f"无法获取从 {start_date_str} 开始的交易日历")
+
+    # 按日期排序
+    cal = cal.sort_values('cal_date')
+
+    # 转换为 pandas.Timestamp 并取前 periods 个
+    trade_dates = pd.to_datetime(cal['cal_date'].head(periods))
+
+    return trade_dates.tolist()
+

@@ -72,7 +72,7 @@ params (预测参数对象):
 {
   symbol: "000001.SH",        // 标的代码
   start_date: "20220101",     // 起始日期
-  end_date: "20251231",       // 结束日期
+  end_date: "YYYYMMDD",       // 结束日期（默认使用当天）
   window: 5,                  // 基准周期(天)
   h_future: 5,                // 预测天数(动态可调)
   epochs: 20,                 // 训练轮数
@@ -1845,11 +1845,18 @@ const filteredFeatureGroups = computed(() => {
   return filtered
 })
 
+function formatYmd(date = new Date()) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}${month}${day}`
+}
+
 // 参数配置
 const params = reactive({
   symbol: '000001.SH',
   startDate: '20200101',
-  endDate: '20251231',
+  endDate: formatYmd(),
   window: 5,              // 基准周期：用于查找历史段
   h_future: 5,            // 预测周期：预测未来天数
   epochs: 20,
@@ -2150,6 +2157,12 @@ const runPrediction = async () => {
   }
 
   try {
+    // 避免 endDate 长期写死导致“预测首日=今天”
+    const todayYmd = formatYmd()
+    if (!/^\d{8}$/.test(String(params.endDate || '')) || String(params.endDate) < todayYmd) {
+      params.endDate = todayYmd
+    }
+
     // 先检查缓存状态
     await checkCacheStatus()
     // 根据预测方式设置聚合方法

@@ -24,7 +24,7 @@
  * const result = await predictAPI({
  *   symbol: "000001.SH",
  *   start_date: "20220101",
- *   end_date: "20251231",
+ *   end_date: "YYYYMMDD",
  *   window: 5,
  *   h_future: 5
  * })

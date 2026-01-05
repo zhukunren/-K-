@@ -68,6 +68,7 @@ USE_WINDOW_ZSCORE: 是否窗口内标准化(True) - 突出形态相似性而非�
 """
 
 import os
+from datetime import datetime
 import numpy as np
 import pandas as pd
 import torch
@@ -78,7 +79,7 @@ import plotly.graph_objects as go
 
 # ===== 你工程中的函数 =====
 from preprocess import preprocess_data
-from function import *   # 需包含 read_day_from_tushare
+from function import *   # 需包含 read_day_from_tushare 和 get_next_trade_dates
 from models import (
     LSTMPredictor,
     GRUPredictor,
@@ -98,7 +99,7 @@ except ImportError:
 SEED = 42
 SYMBOL = "000001.SH"
 START_DATE = "20220101"
-END_DATE   = "20251231"
+END_DATE   = datetime.now().strftime("%Y%m%d")
 
 # 窗口 & 模型
 # 窗口 & 模型参数
@@ -605,8 +606,17 @@ def analog_forecast_ohlc(df: pd.DataFrame, matches, window: int, stride: int, h_
     h_pred, l_pred = hi, lo
 
     last_date = pd.to_datetime(df_ohlc.index[-1])
-    # 使用交易日频率生成未来坐标（不包含周末）
-    future_dates = pd.bdate_range(last_date + pd.Timedelta(days=1), periods=h_future)
+    # 使用交易日历API获取真实交易日（自动跳过周末和节假日）
+    try:
+        # 调用Tushare API获取未来的真实交易日
+        from function import get_next_trade_dates
+        next_trade_date = last_date + pd.Timedelta(days=1)
+        future_dates = get_next_trade_dates(next_trade_date, periods=h_future)
+    except Exception as e:
+        # 如果获取交易日历失败，降级使用工作日（仅跳过周末）
+        print(f"[WARNING] 获取交易日历失败: {e}，降级使用工作日（pd.bdate_range）")
+        future_dates = pd.bdate_range(last_date + pd.Timedelta(days=1), periods=h_future)
+
     print(f"[INFO] 可用相似窗口数（用于 K 线）：{usable}/{len(matches)}")
     return o_pred, h_pred, l_pred, c_pred, future_dates
 
