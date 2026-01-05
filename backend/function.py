@@ -1261,7 +1261,7 @@ import tushare as ts
 import pandas as pd
 
 
-def read_day_from_tushare(symbol_code, symbol_type='stock',start_date='19920101', end_date='20251231'):
+def read_day_from_tushare(symbol_code, symbol_type='stock',start_date='19920101', end_date='20261231'):
     """
     Fetch daily bar data via the Tushare Pro API.
 

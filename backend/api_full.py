@@ -40,7 +40,7 @@ class PredictionRequest(BaseModel):
 
     symbol: str = "000001.SH"
     start_date: str = "20200101"
-    end_date: str = "20251231"
+    end_date: str = "20261231"
     window: int = 30
     h_future: int = 5
     epochs: int = 20
