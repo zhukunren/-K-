@@ -143,33 +143,17 @@ OBV (On-Balance Volume):
 import numpy as np
 import pandas as pd
 import os
-import warnings
-from pathlib import Path
+import atexit
+import threading
 from typing import Dict, Tuple
-import tushare as ts
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pymysql.err import OperationalError, ProgrammingError
 from pymysql import connect
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime, time as dt_time
-#pro = ts.pro_api()
 
-# --- Tushare credential handling and caching ---
-# 优先环境变量 -> 本地文件 backend/.tushare_token -> 无则警告
-_TUSHARE_TOKEN = os.getenv("TUSHARE_TOKEN")
-if not _TUSHARE_TOKEN:
-    token_file = Path(__file__).resolve().parent / ".tushare_token"
-    if token_file.exists():
-        _TUSHARE_TOKEN = token_file.read_text(encoding="utf-8").strip()
-
-if _TUSHARE_TOKEN:
-    ts.set_token(_TUSHARE_TOKEN)
-else:
-    warnings.warn(
-        "未配置 Tushare token。请设置环境变量 TUSHARE_TOKEN 或在 backend/.tushare_token 写入 token 以启用在线数据下载。",
-        RuntimeWarning,
-    )
+# --- Market data caching ---
 
 _TUSHARE_CACHE: Dict[Tuple[str, str, str, str], pd.DataFrame] = {}
 _TUSHARE_CACHE_TS: Dict[Tuple[str, str, str, str], datetime] = {}
@@ -178,6 +162,27 @@ _TUSHARE_CACHE_TS: Dict[Tuple[str, str, str, str], datetime] = {}
 # after market close so next-day predictions are not stuck on yesterday.
 _TUSHARE_CACHE_MIN_REFRESH_SECONDS = int(os.getenv("TUSHARE_CACHE_MIN_REFRESH_SECONDS", "600"))  # 10 min
 _TUSHARE_CACHE_REFRESH_AFTER = dt_time(16, 30)
+
+_BAOSTOCK_LOGIN_LOCK = threading.Lock()
+_BAOSTOCK_LOGGED_IN = False
+
+
+def _baostock_login_once() -> None:
+    """Login to Baostock once per process (thread-safe)."""
+    global _BAOSTOCK_LOGGED_IN
+    if _BAOSTOCK_LOGGED_IN:
+        return
+
+    import baostock as bs
+
+    with _BAOSTOCK_LOGIN_LOCK:
+        if _BAOSTOCK_LOGGED_IN:
+            return
+        lg = bs.login()
+        if str(getattr(lg, "error_code", "1")) != "0":
+            raise RuntimeError(f"Baostock login failed: {lg.error_code} {lg.error_msg}")
+        _BAOSTOCK_LOGGED_IN = True
+        atexit.register(lambda: bs.logout())
 
 
 def clear_tushare_cache() -> None:
@@ -1257,13 +1262,12 @@ def compute_CMO(series, period=14):
     return cmo
 
 
-import tushare as ts
 import pandas as pd
 
 
 def read_day_from_tushare(symbol_code, symbol_type='stock',start_date='19920101', end_date='20261231'):
     """
-    Fetch daily bar data via the Tushare Pro API.
+    Fetch daily bar data via AkShare.
 
     Args:
         symbol_code: Stock or index code such as '000001.SZ'.
@@ -1272,64 +1276,147 @@ def read_day_from_tushare(symbol_code, symbol_type='stock',start_date='19920101'
         end_date: Inclusive end date string in YYYYMMDD format.
 
     Returns:
-        pandas.DataFrame with day level OHLCV data (and fundamentals for stocks).
+        pandas.DataFrame with day level OHLCV data.
     """
     symbol_type = symbol_type.lower()
     assert symbol_type in ('stock', 'index'), "symbol_type must be 'stock' or 'index'"
 
-    cache_key = (
-        symbol_code,
-        symbol_type,
-        str(start_date) if start_date is not None else '',
-        str(end_date) if end_date is not None else '',
-    )
+    def _to_yyyymmdd(value: object, default: str) -> str:
+        if value is None:
+            return default
+        s = str(value).strip()
+        if not s:
+            return default
+        if len(s) == 8 and s.isdigit():
+            return s
+        try:
+            return pd.to_datetime(s).strftime("%Y%m%d")
+        except Exception:
+            return default
+
+    def _slice_by_trade_date(df: pd.DataFrame) -> pd.DataFrame:
+        if df is None or df.empty:
+            return df.copy() if df is not None else pd.DataFrame()
+        if "trade_date" not in df.columns:
+            return df.copy()
+
+        start = _parse_yyyymmdd(start_date)
+        end = _parse_yyyymmdd(end_date)
+        out = df
+        if start is not None:
+            out = out[out["trade_date"] >= pd.Timestamp(start)]
+        if end is not None:
+            out = out[out["trade_date"] <= pd.Timestamp(end)]
+        return out.copy()
+
+    # AkShare's index endpoint returns full history; cache the full series and slice per request.
+    if symbol_type == "index":
+        cache_key = (symbol_code, symbol_type, "__FULL__", "__FULL__")
+    else:
+        cache_key = (
+            symbol_code,
+            symbol_type,
+            str(start_date) if start_date is not None else '',
+            str(end_date) if end_date is not None else '',
+        )
 
     if cache_key in _TUSHARE_CACHE:
         cached_df = _TUSHARE_CACHE[cache_key]
         fetched_at = _TUSHARE_CACHE_TS.get(cache_key)
         now = datetime.now()
         if not _should_refresh_tushare_cache(df=cached_df, end_date=end_date, fetched_at=fetched_at, now=now):
+            if symbol_type == "index":
+                return _slice_by_trade_date(cached_df)
             return cached_df.copy()
 
-    if not _TUSHARE_TOKEN:
-        raise RuntimeError(
-            "Tushare token is not configured. Set TUSHARE_TOKEN or create backend/.tushare_token to enable data downloads."
+    import akshare as ak
+
+    if symbol_type == "stock":
+        raw = str(symbol_code).strip()
+        if "." in raw:
+            raw = raw.split(".", 1)[0]
+        raw = raw.lower()
+        if raw.startswith(("sh", "sz")) and len(raw) == 8 and raw[2:].isdigit():
+            raw = raw[2:]
+        if not (len(raw) == 6 and raw.isdigit()):
+            raise ValueError(f"Invalid stock symbol_code: {symbol_code}")
+
+        start_str = _to_yyyymmdd(start_date, "19700101")
+        end_str = _to_yyyymmdd(end_date, "20500101")
+        df = ak.stock_zh_a_hist(
+            symbol=raw,
+            period="daily",
+            start_date=start_str,
+            end_date=end_str,
+            adjust="",
         )
 
-    pro = ts.pro_api()
-
-    if symbol_type == 'stock':
-        df1 = pro.daily(ts_code=symbol_code, start_date=start_date, end_date=end_date)
-        df2 = pro.daily_basic(
-            ts_code=symbol_code,
-            start_date=start_date,
-            end_date=end_date,
-            fields='trade_date,turnover_rate_f,volume_ratio,pe,pb'
-        )
-
-        df1['trade_date'] = pd.to_datetime(df1['trade_date'], format='%Y%m%d')
-        df2['trade_date'] = pd.to_datetime(df2['trade_date'], format='%Y%m%d')
-
-        df = pd.merge(df1, df2, on='trade_date', how='inner', suffixes=('', '_basic'))
-        if df.empty:
+        if df is None or df.empty:
             print(f"[{symbol_code}] stock data is empty, returning an empty DataFrame")
+            df = pd.DataFrame()
             _TUSHARE_CACHE[cache_key] = df.copy()
             return df
 
-        df = df.rename(columns={'vol': 'volume'})
+        df = df.rename(
+            columns={
+                "日期": "trade_date",
+                "开盘": "open",
+                "最高": "high",
+                "最低": "low",
+                "收盘": "close",
+                "成交量": "volume",
+            }
+        )
+        df["trade_date"] = pd.to_datetime(df["trade_date"])
+        for col in ("open", "high", "low", "close", "volume"):
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors="coerce")
+        keep_cols = [c for c in ("trade_date", "open", "high", "low", "close", "volume") if c in df.columns]
+        df = df[keep_cols].sort_values(by="trade_date")
+        _TUSHARE_CACHE[cache_key] = df.copy()
+        _TUSHARE_CACHE_TS[cache_key] = datetime.now()
+        return df
+
+    # index
+    code = str(symbol_code).strip().upper()
+    if code.startswith(("SH", "SZ")) and len(code) == 8 and code[2:].isdigit():
+        ak_symbol = code[:2].lower() + code[2:]
+    elif "." in code:
+        base, market = code.split(".", 1)
+        base = base.strip()
+        market = market.strip().upper()
+        if market == "SH":
+            prefix = "sh"
+        elif market == "SZ":
+            prefix = "sz"
+        else:
+            raise ValueError(f"Unsupported index market: {market} (symbol_code={symbol_code})")
+        if not base.isdigit():
+            raise ValueError(f"Invalid index symbol_code: {symbol_code}")
+        ak_symbol = prefix + base.zfill(6)
+    elif len(code) == 6 and code.isdigit():
+        ak_symbol = ("sz" if code.startswith("399") else "sh") + code
     else:
-        df = pro.index_daily(ts_code=symbol_code, start_date=start_date, end_date=end_date)
-        if df.empty:
-            print(f"[{symbol_code}] index data is empty, returning an empty DataFrame")
-            _TUSHARE_CACHE[cache_key] = df.copy()
-            return df
+        raise ValueError(f"Invalid index symbol_code: {symbol_code}")
 
-        df = df.rename(columns={'vol': 'volume'})
+    df_full = ak.stock_zh_index_daily(symbol=ak_symbol)
+    if df_full is None or df_full.empty:
+        print(f"[{symbol_code}] index data is empty, returning an empty DataFrame")
+        df_full = pd.DataFrame()
+        _TUSHARE_CACHE[cache_key] = df_full.copy()
+        return df_full
 
-    df = df.sort_values(by='trade_date')
-    _TUSHARE_CACHE[cache_key] = df.copy()
+    df_full = df_full.rename(columns={"date": "trade_date"})
+    df_full["trade_date"] = pd.to_datetime(df_full["trade_date"])
+    for col in ("open", "high", "low", "close", "volume"):
+        if col in df_full.columns:
+            df_full[col] = pd.to_numeric(df_full[col], errors="coerce")
+    df_full = df_full[[c for c in ("trade_date", "open", "high", "low", "close", "volume") if c in df_full.columns]]
+    df_full = df_full.sort_values(by="trade_date")
+
+    _TUSHARE_CACHE[cache_key] = df_full.copy()
     _TUSHARE_CACHE_TS[cache_key] = datetime.now()
-    return df
+    return _slice_by_trade_date(df_full)
 
 import os
 import pandas as pd
@@ -1431,13 +1518,25 @@ def read_day_from_mysql(symbol_code, symbol_type='stock', start_date=None, end_d
     return df
 
 def get_all_stocks():
-    TS_TOKEN = "2876ea85cb005fb5fa17c809a98174f2d5aae8b1f830110a5ead6211"
-    pro = ts.pro_api(TS_TOKEN)
-    data = pro.stock_basic(exchange='', list_status='L', fields='ts_code,symbol,name,area,industry,list_date')
-    print(data)
-    #stock_list = data['ts_code'].tolist()
-    data.rename(columns={'ts_code': 'stock_code', 'name': 'stock_name'}, inplace=True)
-  
+    import akshare as ak
+
+    data = ak.stock_info_a_code_name()
+    if data is None or data.empty:
+        return pd.DataFrame(columns=["stock_code", "stock_name"])
+
+    data = data.rename(columns={"code": "stock_code", "name": "stock_name"})
+
+    def _to_ts_code(code: object) -> str:
+        c = str(code).strip().zfill(6)
+        if c.startswith(("6", "9")):
+            return f"{c}.SH"
+        if c.startswith(("0", "2", "3")):
+            return f"{c}.SZ"
+        if c.startswith(("4", "8")):
+            return f"{c}.BJ"
+        return c
+
+    data["stock_code"] = data["stock_code"].apply(_to_ts_code)
     return data
 
 def get_all_stocks_fromcsv():
@@ -1465,43 +1564,42 @@ def get_next_trade_dates(start_date: str, periods: int, exchange: str = 'SSE') -
         >>> dates = get_next_trade_dates('20251231', 5)
         >>> # 返回 2025年12月31日之后的5个交易日（跳过元旦等节假日）
     """
-    if not _TUSHARE_TOKEN:
-        raise RuntimeError(
-            "Tushare token is not configured. Set TUSHARE_TOKEN or create backend/.tushare_token to enable data downloads."
-        )
+    if periods <= 0:
+        return []
 
-    # 转换起始日期为字符串格式 YYYYMMDD
     if isinstance(start_date, pd.Timestamp):
-        start_date_str = start_date.strftime('%Y%m%d')
-    elif isinstance(start_date, str):
-        start_date_str = start_date
+        start_ts = start_date
     else:
-        start_date_str = pd.to_datetime(start_date).strftime('%Y%m%d')
+        start_raw = str(start_date).strip()
+        if len(start_raw) == 8 and start_raw.isdigit():
+            start_ts = pd.to_datetime(start_raw, format="%Y%m%d")
+        else:
+            start_ts = pd.to_datetime(start_raw)
 
-    # 获取未来一段时间的交易日历（获取足够多的日期以确保有足够的交易日）
-    # 预计每周有5个交易日，考虑节假日，获取 periods * 2 天的日历
-    end_date_estimate = pd.to_datetime(start_date_str) + pd.Timedelta(days=periods * 3)
-    end_date_str = end_date_estimate.strftime('%Y%m%d')
+    start_str = start_ts.strftime("%Y-%m-%d")
+    span_days = max(30, int(periods) * 4)
 
-    pro = ts.pro_api()
+    _baostock_login_once()
+    import baostock as bs
 
-    # 获取交易日历
-    # is_open=1 表示交易日，0表示非交易日
-    cal = pro.trade_cal(
-        exchange=exchange,
-        start_date=start_date_str,
-        end_date=end_date_str,
-        is_open='1'  # 只获取交易日
-    )
+    for attempt in range(8):
+        end_ts = start_ts + pd.Timedelta(days=span_days * (attempt + 1))
+        end_str = end_ts.strftime("%Y-%m-%d")
 
-    if cal is None or cal.empty:
-        raise ValueError(f"无法获取从 {start_date_str} 开始的交易日历")
+        rs = bs.query_trade_dates(start_date=start_str, end_date=end_str)
+        if str(getattr(rs, "error_code", "1")) != "0":
+            raise RuntimeError(f"Baostock query_trade_dates failed: {rs.error_code} {rs.error_msg}")
 
-    # 按日期排序
-    cal = cal.sort_values('cal_date')
+        rows = []
+        while rs.next():
+            rows.append(rs.get_row_data())
+        df = pd.DataFrame(rows, columns=getattr(rs, "fields", []))
+        if df.empty:
+            continue
 
-    # 转换为 pandas.Timestamp 并取前 periods 个
-    trade_dates = pd.to_datetime(cal['cal_date'].head(periods))
+        trade_dates = pd.to_datetime(df.loc[df["is_trading_day"] == "1", "calendar_date"])
+        if len(trade_dates) >= periods:
+            return trade_dates.iloc[:periods].tolist()
 
-    return trade_dates.tolist()
+    raise ValueError(f"Unable to get {periods} trade dates from {start_str} via Baostock")
 

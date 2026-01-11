@@ -4,7 +4,8 @@ pandas
 numpy
 torch
 scikit-learn
-tushare
+akshare
+baostock
 plotly
 pydantic
 python-multipart

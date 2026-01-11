@@ -646,7 +646,7 @@ async def _daily_cache_refresh_task():
                 cache_manager.clear_all_cache()
             except Exception:
                 traceback.print_exc()
-            # Clear in-memory Tushare data cache so the refresh job can fetch the newest bars.
+            # Clear in-memory market data cache so the refresh job can fetch the newest bars.
             try:
                 from function import clear_tushare_cache
                 clear_tushare_cache()

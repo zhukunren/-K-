@@ -608,7 +608,7 @@ def analog_forecast_ohlc(df: pd.DataFrame, matches, window: int, stride: int, h_
     last_date = pd.to_datetime(df_ohlc.index[-1])
     # 使用交易日历API获取真实交易日（自动跳过周末和节假日）
     try:
-        # 调用Tushare API获取未来的真实交易日
+        # 调用 Baostock API 获取未来的真实交易日
         from function import get_next_trade_dates
         next_trade_date = last_date + pd.Timedelta(days=1)
         future_dates = get_next_trade_dates(next_trade_date, periods=h_future)
