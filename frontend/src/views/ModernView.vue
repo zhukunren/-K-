@@ -832,6 +832,7 @@ toggleTheme():
               v-for="(window, index) in similarWindows"
               :key="index"
               class="window-card-compact modern-card"
+              :class="{ 'primary-match': index === 0 }"
               :style="{ animationDelay: `${index * 0.08}s` }"
             >
               <div class="window-rank">#{{ index + 1 }}</div>
@@ -2222,10 +2223,8 @@ const runPrediction = async () => {
     requestData.h_future = params.h_future
     const chartRequestData = { ...requestData, evaluate_daily: false }
 
-    const [predResponse, chartResponse] = await Promise.all([
-      predictAPI(requestData),
-      generateChartAPI(chartRequestData)
-    ])
+    // 优先让后端在 /predict 里直接返回图表，避免并发触发两次 pipeline 导致超时
+    const predResponse = await predictAPI({ ...requestData, include_chart: true })
 
     if (predResponse.status === 'success') {
       similarWindows.value = predResponse.similar_windows || []
@@ -2240,11 +2239,26 @@ const runPrediction = async () => {
       // mostSimilarDay.value = predResponse.most_similar_day || null  // 不再需要
     }
 
-    if (chartResponse.status === 'success') {
-      // 存储完整的HTML
-      plotlyHtml.value = chartResponse.html
-      currentChartHtml.value = chartResponse.html
+    // 图表优先使用 /predict 返回的 html；如缺失则降级调用 /generate_chart
+    let chartHtml = predResponse.html
+    if (!chartHtml) {
+      try {
+        const chartResponse = await generateChartAPI(chartRequestData)
+        if (chartResponse.status === 'success') {
+          chartHtml = chartResponse.html
+        }
+      } catch (chartError) {
+        console.error('Chart generation error:', chartError)
+        ElMessage.warning('图表生成失败：' + (chartError?.message || 'unknown error'))
+      }
+    }
 
+    if (chartHtml) {
+      plotlyHtml.value = chartHtml
+      currentChartHtml.value = chartHtml
+    }
+
+    if (predResponse.status === 'success') {
       ElNotification({
         title: '预测成功',
         message: `使用${methodName || '默认'}方式，找到 ${similarWindows.value.length} 个相似历史窗口`,
@@ -3469,6 +3483,37 @@ const getSimilarityClass = (value) => {
           height: 100%;
           background: var(--gradient-primary);
           transition: width 0.3s ease-out;
+        }
+      }
+
+      // 突出显示最相似的窗口卡片（排名第一）
+      &.primary-match {
+        border: 2px solid var(--primary-color);
+        box-shadow: 0 0 12px rgba(59, 130, 246, 0.3),
+                    0 4px 12px rgba(0, 0, 0, 0.1);
+        background: linear-gradient(135deg,
+          rgba(59, 130, 246, 0.08) 0%,
+          var(--card-bg) 100%);
+        transform: scale(1.02);
+
+        .window-rank {
+          color: var(--primary-color);
+          font-size: 16px;
+
+          &::after {
+            content: ' 最相似';
+            font-size: 12px;
+            color: var(--primary-color);
+            font-weight: 500;
+          }
+        }
+
+        [data-theme="dark"] & {
+          box-shadow: 0 0 16px rgba(59, 130, 246, 0.4),
+                      0 4px 12px rgba(0, 0, 0, 0.3);
+          background: linear-gradient(135deg,
+            rgba(59, 130, 246, 0.15) 0%,
+            var(--card-bg) 100%);
         }
       }
     }
