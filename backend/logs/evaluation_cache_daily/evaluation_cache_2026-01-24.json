@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "date": "2026-01-24",
+    "updated_at": "2026-01-24T16:30:43.819814",
+    "version": 1
+  },
+  "b48a63588a2b4a41": {
+    "2026-01-23": {
+      "date": "2026-01-23",
+      "base_close": 4122.576,
+      "predicted_close": 4158.6804801920325,
+      "actual_close": 4136.164,
+      "predicted_return": 0.008757747629645103,
+      "actual_return": 0.003295997454018977,
+      "error": 0.005461750175626126,
+      "match_count": 5,
+      "_bias_applied": true
+    }
+  }
+}

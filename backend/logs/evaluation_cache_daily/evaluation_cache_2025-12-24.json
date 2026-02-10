@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "date": "2025-12-24",
+    "updated_at": "2025-12-24T19:58:04.734118",
+    "version": 1
+  },
+  "b48a63588a2b4a41": {
+    "2025-12-24": {
+      "date": "2025-12-24",
+      "base_close": 3919.9786,
+      "predicted_close": 3943.494282627808,
+      "actual_close": 3940.947,
+      "predicted_return": 0.005998931378811192,
+      "actual_return": 0.005349110834431648,
+      "error": 0.0006498205443795447,
+      "match_count": 5,
+      "_bias_applied": true
+    }
+  },
+  "b5a8ae44cc6c4c4e": {
+    "2025-12-24": {
+      "date": "2025-12-24",
+      "base_close": 3919.9786,
+      "predicted_close": 3954.3708093923865,
+      "actual_close": 3940.947,
+      "predicted_return": 0.008773570700714266,
+      "actual_return": 0.005349110834431648,
+      "error": 0.003424459866282618,
+      "match_count": 5,
+      "_bias_applied": true
+    }
+  }
+}

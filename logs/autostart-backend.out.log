@@ -1,0 +1,457 @@
+INFO:     2409:8a20:4ea4:b131:20cf:c14b:4c0b:6492:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51400 - "OPTIONS /api/cache/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51400 - "POST /api/cache/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50867 - "GET /api/cache/stats HTTP/1.1" 200 OK
+[INFO] Using device: cpu
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 缓存未命中，开始训练
+[AE] epoch 05/20 loss=0.720303
+[AE] epoch 10/20 loss=0.577358
+[AE] epoch 15/20 loss=0.463562
+[AE] epoch 20/20 loss=0.373123
+[Cache] 模型已缓存
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+login success!
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     2409:8a20:4ea4:b131:20cf:c14b:4c0b:6492:0 - "POST /api/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52695 - "POST /api/cache/check HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 使用缓存的模型，跳过训练
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     2409:8a20:4ea4:b131:20cf:c14b:4c0b:6492:0 - "POST /api/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52695 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     2409:8a20:4ea4:b131:20cf:c14b:4c0b:6492:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61642 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56961 - "POST /api/cache/check HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 使用缓存的模型，跳过训练
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     2409:8a20:4ea4:b131:20cf:c14b:4c0b:6492:0 - "POST /api/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56961 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55761 - "OPTIONS /api/cache/clear HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55761 - "DELETE /api/cache/clear HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55761 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55761 - "GET /api/cache/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55761 - "GET /api/cache/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55761 - "POST /api/cache/check HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 缓存未命中，开始训练
+[AE] epoch 05/20 loss=0.720303
+[AE] epoch 10/20 loss=0.577358
+[AE] epoch 15/20 loss=0.463562
+[AE] epoch 20/20 loss=0.373123
+[Cache] 模型已缓存
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     2409:8a20:4ea4:b131:20cf:c14b:4c0b:6492:0 - "POST /api/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61649 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     2409:8a20:4ea4:b131:20cf:c14b:4c0b:6492:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     2409:8a20:4ea4:b131:20cf:c14b:4c0b:6492:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51436 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     112.20.106.127:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51674 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51674 - "OPTIONS /api/cache/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51674 - "POST /api/cache/check HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 使用缓存的模型，跳过训练
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+[WinError 10054] 远程主机强迫关闭了一个现有的连接。
+接收数据异常，请稍后再试。
+[WARNING] 获取交易日历失败: Baostock query_trade_dates failed: 10002007 网络接收错误。，降级使用工作日（pd.bdate_range）
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     112.20.106.127:0 - "POST /api/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51674 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59544 - "OPTIONS /api/cache/clear HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59544 - "DELETE /api/cache/clear HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59544 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59544 - "GET /api/cache/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59544 - "GET /api/cache/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59544 - "POST /api/cache/check HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 缓存未命中，开始训练
+[AE] epoch 05/20 loss=0.720303
+[AE] epoch 10/20 loss=0.577358
+[AE] epoch 15/20 loss=0.463562
+[AE] epoch 20/20 loss=0.373123
+[Cache] 模型已缓存
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+[WinError 10054] 远程主机强迫关闭了一个现有的连接。
+接收数据异常，请稍后再试。
+[WARNING] 获取交易日历失败: Baostock query_trade_dates failed: 10002007 网络接收错误。，降级使用工作日（pd.bdate_range）
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     112.20.106.127:0 - "POST /api/predict HTTP/1.1" 200 OK
+INFO:     223.104.153.91:0 - "GET /api/features HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 使用缓存的模型，跳过训练
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+[WinError 10054] 远程主机强迫关闭了一个现有的连接。
+接收数据异常，请稍后再试。
+[WARNING] 获取交易日历失败: Baostock query_trade_dates failed: 10002007 网络接收错误。，降级使用工作日（pd.bdate_range）
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     223.104.153.91:0 - "POST /api/predict HTTP/1.1" 200 OK
+INFO:     67.159.52.217:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52479 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52479 - "OPTIONS /api/cache/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50887 - "POST /api/cache/check HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 使用缓存的模型，跳过训练
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+[WinError 10054] 远程主机强迫关闭了一个现有的连接。
+接收数据异常，请稍后再试。
+[WARNING] 获取交易日历失败: Baostock query_trade_dates failed: 10002007 网络接收错误。，降级使用工作日（pd.bdate_range）
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     67.159.52.217:0 - "POST /api/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50887 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51964 - "OPTIONS /api/cache/clear HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51964 - "DELETE /api/cache/clear HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51964 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51964 - "GET /api/cache/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51964 - "GET /api/cache/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51964 - "OPTIONS /api/cache/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51964 - "POST /api/cache/check HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 缓存未命中，开始训练
+[AE] epoch 05/20 loss=0.720303
+[AE] epoch 10/20 loss=0.577358
+[AE] epoch 15/20 loss=0.463562
+[AE] epoch 20/20 loss=0.373123
+[Cache] 模型已缓存
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+[WinError 10054] 远程主机强迫关闭了一个现有的连接。
+接收数据异常，请稍后再试。
+[WARNING] 获取交易日历失败: Baostock query_trade_dates failed: 10002007 网络接收错误。，降级使用工作日（pd.bdate_range）
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     67.159.52.217:0 - "POST /api/predict HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 使用缓存的模型，跳过训练
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+[WinError 10054] 远程主机强迫关闭了一个现有的连接。
+接收数据异常，请稍后再试。
+[WARNING] 获取交易日历失败: Baostock query_trade_dates failed: 10002007 网络接收错误。，降级使用工作日（pd.bdate_range）
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     67.159.52.217:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     67.159.52.217:0 - "POST /api/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53254 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53254 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     67.159.52.217:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52383 - "GET /api/cache/stats HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 缓存未命中，开始训练
+[AE] epoch 05/20 loss=0.738665
+[AE] epoch 10/20 loss=0.602819
+[AE] epoch 15/20 loss=0.498471
+[AE] epoch 20/20 loss=0.415222
+[Cache] 模型已缓存
+[INFO] 可用相似窗口数（用于 close 路径带）：5/5
+[WinError 10054] 远程主机强迫关闭了一个现有的连接。
+接收数据异常，请稍后再试。
+[WARNING] 获取交易日历失败: Baostock query_trade_dates failed: 10002007 网络接收错误。，降级使用工作日（pd.bdate_range）
+[INFO] 可用相似窗口数（用于 K 线）：5/5
+INFO:     67.159.52.217:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58792 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63280 - "OPTIONS /api/cache/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63280 - "POST /api/cache/check HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 缓存未命中，开始训练
+[AE] epoch 05/20 loss=0.720392
+[AE] epoch 10/20 loss=0.577176
+[AE] epoch 15/20 loss=0.463614
+[AE] epoch 20/20 loss=0.373208
+[Cache] 模型已缓存
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+[WinError 10054] 远程主机强迫关闭了一个现有的连接。
+接收数据异常，请稍后再试。
+[WARNING] 获取交易日历失败: Baostock query_trade_dates failed: 10002007 网络接收错误。，降级使用工作日（pd.bdate_range）
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     67.159.52.217:0 - "POST /api/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57308 - "OPTIONS /api/cache/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57308 - "POST /api/cache/check HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 缓存未命中，开始训练
+[AE] epoch 05/20 loss=0.720392
+[AE] epoch 10/20 loss=0.577176
+[AE] epoch 15/20 loss=0.463614
+[AE] epoch 20/20 loss=0.373208
+[Cache] 模型已缓存
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+[WinError 10054] 远程主机强迫关闭了一个现有的连接。
+接收数据异常，请稍后再试。
+[WARNING] 获取交易日历失败: Baostock query_trade_dates failed: 10002007 网络接收错误。，降级使用工作日（pd.bdate_range）
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     67.159.52.217:0 - "POST /api/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50350 - "OPTIONS /api/cache/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50350 - "POST /api/cache/check HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 使用缓存的模型，跳过训练
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+[WinError 10054] 远程主机强迫关闭了一个现有的连接。
+接收数据异常，请稍后再试。
+[WARNING] 获取交易日历失败: Baostock query_trade_dates failed: 10002007 网络接收错误。，降级使用工作日（pd.bdate_range）
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     67.159.52.217:0 - "POST /api/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49955 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     67.159.52.217:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51137 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51137 - "OPTIONS /api/cache/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51137 - "POST /api/cache/check HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 使用缓存的模型，跳过训练
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+[WinError 10054] 远程主机强迫关闭了一个现有的连接。
+接收数据异常，请稍后再试。
+[WARNING] 获取交易日历失败: Baostock query_trade_dates failed: 10002007 网络接收错误。，降级使用工作日（pd.bdate_range）
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     67.159.52.217:0 - "POST /api/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51137 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     67.159.52.217:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53914 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     67.159.52.217:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60422 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     67.159.52.217:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60341 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     67.159.52.217:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50483 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     67.159.52.217:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64416 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53891 - "OPTIONS /api/cache/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53891 - "POST /api/cache/check HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 使用缓存的模型，跳过训练
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+[WinError 10054] 远程主机强迫关闭了一个现有的连接。
+接收数据异常，请稍后再试。
+[WARNING] 获取交易日历失败: Baostock query_trade_dates failed: 10002007 网络接收错误。，降级使用工作日（pd.bdate_range）
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     67.159.52.217:0 - "POST /api/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53891 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     67.159.52.217:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62263 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62263 - "POST /api/cache/check HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 使用缓存的模型，跳过训练
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+[WinError 10054] 远程主机强迫关闭了一个现有的连接。
+接收数据异常，请稍后再试。
+[WARNING] 获取交易日历失败: Baostock query_trade_dates failed: 10002007 网络接收错误。，降级使用工作日（pd.bdate_range）
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     67.159.52.217:0 - "POST /api/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62263 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     67.159.52.217:0 - "GET /api/features HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55124 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55124 - "POST /api/cache/check HTTP/1.1" 200 OK
+开始预处理数据...
+开始预处理数据...
+添加计数指标...
+构建基础因子...
+构建基础因子列表 base_features...
+初始 base_features 数量: 36
+对基础特征进行方差过滤...
+方差过滤后剩余特征数：36（从36减少）
+对基础特征进行相关性过滤...
+相关性过滤后剩余特征数：29
+生成混合因子, mixture_depth = 1
+最终特征数量：29
+[Cache] 使用缓存的模型，跳过训练
+[INFO] 可用相似窗口数（用于 close 路径带）：3/3
+[WinError 10054] 远程主机强迫关闭了一个现有的连接。
+接收数据异常，请稍后再试。
+[WARNING] 获取交易日历失败: Baostock query_trade_dates failed: 10002007 网络接收错误。，降级使用工作日（pd.bdate_range）
+[INFO] 可用相似窗口数（用于 K 线）：3/3
+INFO:     67.159.52.217:0 - "POST /api/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55124 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55124 - "OPTIONS /api/cache/clear HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55124 - "DELETE /api/cache/clear HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55124 - "GET /api/cache/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55124 - "GET /api/cache/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55124 - "GET /api/cache/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55124 - "POST /api/cache/check HTTP/1.1" 200 OK

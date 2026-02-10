@@ -1,0 +1,44 @@
+{
+  "_meta": {
+    "date": "2025-12-23",
+    "updated_at": "2025-12-23T20:46:26.676239",
+    "version": 1
+  },
+  "b48a63588a2b4a41": {
+    "2025-12-22": {
+      "date": "2025-12-22",
+      "base_close": 3890.4475,
+      "predicted_close": 3912.5272894078794,
+      "actual_close": 3917.3638,
+      "predicted_return": 0.005675385520015229,
+      "actual_return": 0.00691856142513165,
+      "error": -0.001243175905116421,
+      "match_count": 5,
+      "_bias_applied": true
+    },
+    "2025-12-23": {
+      "date": "2025-12-23",
+      "base_close": 3917.3638,
+      "predicted_close": 3886.354222313809,
+      "actual_close": 3919.9786,
+      "predicted_return": -0.007915930015535262,
+      "actual_return": 0.0006674897031518573,
+      "error": -0.008583419718687119,
+      "match_count": 5,
+      "_bias_applied": true
+    }
+  },
+  "b5a8ae44cc6c4c4e": {
+    "2025-12-23": {
+      "date": "2025-12-23",
+      "base_close": 3917.3638,
+      "predicted_close": 3893.3184079246025,
+      "actual_close": 3919.9786,
+      "predicted_return": -0.006138156500909503,
+      "actual_return": 0.0006674897031518573,
+      "error": -0.00680564620406136,
+      "match_count": 5,
+      "_bias_applied": true
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "_meta": {
+    "date": "2026-01-22",
+    "updated_at": "2026-01-22T16:30:19.869400",
+    "version": 1
+  },
+  "b5a8ae44cc6c4c4e": {
+    "2026-01-19": {
+      "date": "2026-01-19",
+      "base_close": 4101.913,
+      "predicted_close": 4068.714526797005,
+      "actual_close": 4114.0,
+      "predicted_return": -0.008093412318348661,
+      "actual_return": 0.0029466739055656337,
+      "error": -0.011040086223914294,
+      "match_count": 5,
+      "_bias_applied": true
+    },
+    "2026-01-20": {
+      "date": "2026-01-20",
+      "base_close": 4114.0,
+      "predicted_close": 4056.409419941937,
+      "actual_close": 4113.649,
+      "predicted_return": -0.013998682561512682,
+      "actual_return": -8.531842489053428e-05,
+      "error": -0.013913364136622147,
+      "match_count": 5,
+      "_bias_applied": true
+    },
+    "2026-01-21": {
+      "date": "2026-01-21",
+      "base_close": 4113.649,
+      "predicted_close": 4088.6336779999947,
+      "actual_close": 4116.94,
+      "predicted_return": -0.006081054071459589,
+      "actual_return": 0.0008000196419284333,
+      "error": -0.006881073713388022,
+      "match_count": 4,
+      "_bias_applied": true
+    }
+  },
+  "b48a63588a2b4a41": {
+    "2026-01-21": {
+      "date": "2026-01-21",
+      "base_close": 4113.649,
+      "predicted_close": 4085.046417107006,
+      "actual_close": 4116.94,
+      "predicted_return": -0.006953092714763508,
+      "actual_return": 0.0008000196419284333,
+      "error": -0.007753112356691941,
+      "match_count": 5,
+      "_bias_applied": true
+    }
+  }
+}

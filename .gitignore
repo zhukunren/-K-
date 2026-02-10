@@ -28,6 +28,10 @@ logs/
 *.log
 *.pid
 backend/logs/
+!logs/
+!logs/**/*
+!backend/logs/
+!backend/logs/**/*
 
 # IDE
 .vscode/

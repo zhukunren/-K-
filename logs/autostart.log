@@ -1,0 +1,54 @@
+[2026-01-16 21:17:35] AutoStart task triggered
+[2026-01-16 21:17:35] Backend started
+[2026-01-16 21:17:35] Frontend started
+[2026-01-16 21:41:43] AutoStart task triggered (user=11705, batteryStatus=2, charge=57%)
+[2026-01-16 21:41:45] Backend port 8001 already in use; skip starting backend
+[2026-01-16 21:41:45] Frontend port 5173 already in use; skip starting frontend
+[2026-01-16 21:43:03] AutoStart task triggered (user=11705, batteryStatus=2, charge=59%)
+[2026-01-16 21:43:04] Backend port 8001 already in use; skip starting backend
+[2026-01-16 21:43:04] Frontend port 5173 already in use; skip starting frontend
+[2026-01-16 21:55:33] AutoStart task triggered (user=11705, batteryStatus=2, charge=75%)
+[2026-01-16 21:55:35] Backend started (pid=12928)
+[2026-01-16 21:55:35] Frontend started (pid=12956)
+[2026-01-16 22:59:06] AutoStart task triggered (user=11705, batteryStatus=1, charge=98%)
+[2026-01-16 22:59:09] Backend started (pid=13532)
+[2026-01-16 22:59:10] Frontend started (pid=13428)
+[2026-01-16 23:03:43] AutoStart task triggered (user=11705, batteryStatus=1, charge=95%)
+[2026-01-16 23:03:47] Backend started (pid=7880)
+[2026-01-16 23:03:47] Frontend started (pid=8292)
+[2026-01-16 23:05:34] AutoStart task triggered (user=11705, batteryStatus=1, charge=94%)
+[2026-01-16 23:05:38] Backend started (pid=13268)
+[2026-01-16 23:05:38] Frontend started (pid=10488)
+[2026-01-18 22:01:27] AutoStart task triggered (user=11705, batteryStatus=2, charge=100%)
+[2026-01-18 22:01:28] Backend port 8001 already in use; skip starting backend
+[2026-01-18 22:01:28] Frontend started (pid=17100)
+[2026-01-18 22:11:42] AutoStart task triggered (user=11705, batteryStatus=2, charge=100%)
+[2026-01-18 22:11:43] Backend port 8001 already in use; skip starting backend
+[2026-01-18 22:11:43] Frontend started (pid=2552)
+[2026-01-18 22:15:32] AutoStart task triggered (user=11705, batteryStatus=2, charge=100%)
+[2026-01-18 22:15:34] Backend port 8001 already in use; skip starting backend
+[2026-01-18 22:15:34] Frontend port 5173 already in use; skip starting frontend
+[2026-01-19 00:12:00] AutoStart task triggered (user=11705, batteryStatus=2, charge=100%)
+[2026-01-19 00:12:01] Backend started (pid=13896)
+[2026-01-19 00:12:02] Frontend started (pid=13968)
+[2026-01-20 08:03:36] AutoStart task triggered (user=11705, batteryStatus=2, charge=100%)
+[2026-01-20 08:03:38] Backend started (pid=13704)
+[2026-01-20 08:03:38] Frontend started (pid=13772)
+[2026-01-26 21:42:42] AutoStart task triggered (user=11705, batteryStatus=2, charge=100%)
+[2026-01-26 21:42:45] Backend started (pid=12692)
+[2026-01-26 21:42:45] Frontend started (pid=13504)
+[2026-01-27 21:30:06] AutoStart task triggered (user=11705, batteryStatus=2, charge=100%)
+[2026-01-27 21:30:07] Backend started (pid=13548)
+[2026-01-27 21:30:08] Frontend started (pid=13724)
+[2026-01-30 08:31:55] AutoStart task triggered (user=11705, batteryStatus=2, charge=100%)
+[2026-01-30 08:31:57] Backend started (pid=8260)
+[2026-01-30 08:31:57] Frontend started (pid=10072)
+[2026-01-31 00:00:34] AutoStart task triggered (user=11705, batteryStatus=2, charge=100%)
+[2026-01-31 00:00:36] Backend started (pid=11400)
+[2026-01-31 00:00:38] Frontend started (pid=12220)
+[2026-01-31 12:01:33] AutoStart task triggered (user=11705, batteryStatus=2, charge=100%)
+[2026-01-31 12:01:35] Backend started (pid=18300)
+[2026-01-31 12:01:35] Frontend started (pid=12776)
+[2026-02-09 20:49:55] AutoStart task triggered (user=11705, batteryStatus=2, charge=100%)
+[2026-02-09 20:49:56] Backend started (pid=5036)
+[2026-02-09 20:49:57] Frontend started (pid=6032)
