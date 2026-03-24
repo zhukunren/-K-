@@ -166,6 +166,113 @@ def _apply_bias_to_eval_record(record: Dict[str, Any]) -> Dict[str, Any]:
     return rec
 
 
+def _is_finite_number(value: Any) -> bool:
+    try:
+        return isinstance(value, (int, float)) and np.isfinite(float(value))
+    except Exception:
+        return False
+
+
+def _merge_cached_eval_record(
+    cached: Dict[str, Any],
+    forecast_date_str: str,
+    base_close: float,
+    actual_close: float,
+    match_count: Optional[int] = None,
+) -> tuple:
+    """
+    Merge cached evaluation record with fresh actuals while keeping cached prediction frozen.
+    Returns (record, cache_updated, usable).
+    """
+    record = dict(cached) if isinstance(cached, dict) else {}
+    cache_updated = False
+
+    if record.get("date") is None:
+        record["date"] = forecast_date_str
+        cache_updated = True
+
+    if not _is_finite_number(record.get("base_close")) and _is_finite_number(base_close):
+        record["base_close"] = float(base_close)
+        cache_updated = True
+
+    if not _is_finite_number(record.get("predicted_return")):
+        pred_close = record.get("predicted_close")
+        if _is_finite_number(pred_close) and _is_finite_number(record.get("base_close")) and record["base_close"] != 0:
+            record["predicted_return"] = (float(pred_close) - float(record["base_close"])) / float(record["base_close"])
+            cache_updated = True
+
+    if not _is_finite_number(record.get("predicted_close")):
+        if _is_finite_number(record.get("predicted_return")) and _is_finite_number(record.get("base_close")):
+            record["predicted_close"] = float(record["base_close"]) * (1.0 + float(record["predicted_return"]))
+            cache_updated = True
+
+    if _is_finite_number(actual_close) and _is_finite_number(record.get("base_close")) and record["base_close"] != 0:
+        actual_return = (float(actual_close) - float(record["base_close"])) / float(record["base_close"])
+        if not _is_finite_number(record.get("actual_close")):
+            record["actual_close"] = float(actual_close)
+            cache_updated = True
+        if not _is_finite_number(record.get("actual_return")):
+            record["actual_return"] = float(actual_return)
+            cache_updated = True
+
+    if _is_finite_number(record.get("predicted_return")) and _is_finite_number(record.get("actual_return")):
+        if not _is_finite_number(record.get("error")):
+            record["error"] = float(record["predicted_return"]) - float(record["actual_return"])
+            cache_updated = True
+
+    if match_count is not None and not _is_finite_number(record.get("match_count")):
+        record["match_count"] = int(match_count)
+        cache_updated = True
+
+    if record.get("_from_forecast") and not record.get("_bias_applied"):
+        record["_bias_applied"] = True
+        cache_updated = True
+
+    if not _is_finite_number(record.get("predicted_return")) and not record.get("_bias_applied"):
+        return record, cache_updated, False
+
+    before_bias = bool(record.get("_bias_applied"))
+    record = _apply_bias_to_eval_record(record)
+    if not before_bias and record.get("_bias_applied"):
+        cache_updated = True
+
+    if not _is_finite_number(record.get("predicted_return")):
+        return record, cache_updated, False
+
+    return record, cache_updated, True
+
+
+def _cache_forecast_eval_record(
+    eval_cache: EvaluationCache,
+    eval_cache_key: str,
+    forecast_date_str: str,
+    base_close: float,
+    predicted_close: float,
+    match_count: Optional[int] = None,
+) -> None:
+    if not forecast_date_str or not _is_finite_number(base_close) or base_close == 0:
+        return
+    if not _is_finite_number(predicted_close):
+        return
+    existing = eval_cache.get(eval_cache_key, forecast_date_str)
+    if existing:
+        return
+    predicted_return = (float(predicted_close) - float(base_close)) / float(base_close)
+    record = {
+        "date": forecast_date_str,
+        "base_close": float(base_close),
+        "predicted_close": float(predicted_close),
+        "predicted_return": float(predicted_return),
+        "actual_close": None,
+        "actual_return": None,
+        "error": None,
+        "match_count": int(match_count) if match_count is not None else None,
+        "_bias_applied": True,
+        "_from_forecast": True,
+    }
+    eval_cache.set_many(eval_cache_key, {forecast_date_str: record})
+
+
 def _compute_window_signatures(close_array: np.ndarray, volume_array: Optional[np.ndarray], window: int, stride: int) -> np.ndarray:
     total = len(close_array)
     if total < window:
@@ -468,8 +575,19 @@ def _run_daily_evaluation(
         ):
             cached = eval_cache.get(eval_cache_key, forecast_date_str)
             if cached:
-                records.append(_apply_bias_to_eval_record(cached))
-                continue
+                base_close_val = float(close_np[base_end_pos])
+                actual_close_val = float(close_np[next_pos])
+                merged, cache_updated, usable = _merge_cached_eval_record(
+                    cached,
+                    forecast_date_str,
+                    base_close_val,
+                    actual_close_val,
+                )
+                if usable:
+                    records.append(merged)
+                    if cache_updated:
+                        new_cache_records[forecast_date_str] = merged
+                    continue
 
         candidate_indices = None
         if prefilter_enabled:
@@ -1178,6 +1296,26 @@ def run_transformer_pipeline(request) -> dict:
             except Exception:
                 eval_cache = None
                 eval_cache_key = None
+        if eval_cache is not None and eval_cache_key and freeze_eval_history:
+            try:
+                if predictions and _is_finite_number(last_known_close):
+                    first_pred = predictions[0] if predictions else None
+                    forecast_date_str = first_pred.get("date") if isinstance(first_pred, dict) else None
+                    pred_close_val = None
+                    if isinstance(first_pred, dict):
+                        pred_close_val = first_pred.get("close")
+                        if not _is_finite_number(pred_close_val):
+                            pred_close_val = first_pred.get("open")
+                    _cache_forecast_eval_record(
+                        eval_cache,
+                        eval_cache_key,
+                        forecast_date_str,
+                        float(last_known_close),
+                        pred_close_val,
+                        match_count=len(matches) if matches is not None else None,
+                    )
+            except Exception:
+                pass
         evaluation_data = _run_daily_evaluation(
             request=request,
             embeddings=embeddings,

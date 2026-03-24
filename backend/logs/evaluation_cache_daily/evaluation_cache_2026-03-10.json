@@ -1,0 +1,59 @@
+{
+  "_meta": {
+    "date": "2026-03-10",
+    "updated_at": "2026-03-10T16:30:59.596732",
+    "version": 1
+  },
+  "b5a8ae44cc6c4c4e": {
+    "2026-03-10": {
+      "date": "2026-03-10",
+      "base_close": 4096.602,
+      "predicted_close": 4122.008298394794,
+      "predicted_return": 0.006201798074305058,
+      "actual_close": null,
+      "actual_return": null,
+      "error": null,
+      "match_count": 3,
+      "_bias_applied": true,
+      "_from_forecast": true
+    },
+    "2026-03-09": {
+      "date": "2026-03-09",
+      "base_close": 4124.194,
+      "predicted_close": 4148.4979523575685,
+      "predicted_return": 0.005893018698336705,
+      "actual_close": 4096.602,
+      "actual_return": -0.006690276936536096,
+      "error": 0.012583295634872801,
+      "match_count": 5,
+      "_bias_applied": true,
+      "_from_forecast": true
+    }
+  },
+  "b48a63588a2b4a41": {
+    "2026-03-10": {
+      "date": "2026-03-10",
+      "base_close": 4096.602,
+      "predicted_close": 4058.461534221908,
+      "predicted_return": -0.009310268797918804,
+      "actual_close": null,
+      "actual_return": null,
+      "error": null,
+      "match_count": 5,
+      "_bias_applied": true,
+      "_from_forecast": true
+    },
+    "2026-03-09": {
+      "date": "2026-03-09",
+      "base_close": 4124.194,
+      "predicted_close": 4096.589866412976,
+      "predicted_return": -0.006693218987037001,
+      "actual_close": 4096.602,
+      "actual_return": -0.006690276936536096,
+      "error": -2.942050500904375e-06,
+      "match_count": 5,
+      "_bias_applied": true,
+      "_from_forecast": true
+    }
+  }
+}

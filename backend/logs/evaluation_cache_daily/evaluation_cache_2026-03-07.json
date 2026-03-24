@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "date": "2026-03-07",
+    "updated_at": "2026-03-07T16:30:25.481087",
+    "version": 1
+  },
+  "b48a63588a2b4a41": {
+    "2026-03-09": {
+      "date": "2026-03-09",
+      "base_close": 4124.194,
+      "predicted_close": 4096.589866412976,
+      "predicted_return": -0.006693218987037001,
+      "actual_close": null,
+      "actual_return": null,
+      "error": null,
+      "match_count": 5,
+      "_bias_applied": true,
+      "_from_forecast": true
+    },
+    "2026-03-06": {
+      "date": "2026-03-06",
+      "base_close": 4108.567,
+      "predicted_close": 4142.495085468661,
+      "predicted_return": 0.008257887839887061,
+      "actual_close": 4124.194,
+      "actual_return": 0.003803515921731447,
+      "error": 0.004454371918155614,
+      "match_count": 1,
+      "_bias_applied": true,
+      "_from_forecast": true
+    }
+  }
+}

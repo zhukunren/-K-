@@ -1,0 +1,21 @@
+{
+  "cache_key": "000001.SH_transformer_616fd25a34a20489",
+  "params": {
+    "symbol": "000001.SH",
+    "start_date": "20200101",
+    "end_date": "20260211",
+    "selected_features": [],
+    "engine": "ml",
+    "window": 30,
+    "stride": 1,
+    "d_model": 64,
+    "nhead": 4,
+    "num_layers": 2,
+    "epochs": 20,
+    "use_window_zscore": true,
+    "model_type": "transformer",
+    "feature_dim": 29
+  },
+  "timestamp": "2026-02-11T23:59:20.938177",
+  "file_size": 7737005
+}
